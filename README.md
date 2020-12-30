@@ -60,6 +60,6 @@ To Run it directly on your device, run the following command and select your dev
 flutter run 
 ```
 ## Run the App on your Browser (with zero Setup)
-- [Click here for Demo](https://flutter.dev/docs/get-started/codelab)
+- [Click here for Demo](https://shittu33.github.io/Responsive-FacebookClone/)
 
 

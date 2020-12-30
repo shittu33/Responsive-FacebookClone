@@ -16,8 +16,8 @@ The App maintains its responsiveness with the following declared sizes:
   - ExtraLargeSize: (1258 px)
 
 The app handles responsiveness for  all its Components with 2 Main Components: **FacebookAppBar** and **FacebookBody**
-#### Responsive FacebookAppBarThe App used a Custom widget named ResponsiveAppBar whose view depends on the current Screen Size:
-
+#### Responsive FacebookAppBar
+The App used a Custom widget named ResponsiveAppBar whose view depends on the current Screen Size:
 - MobileScreenWidth: when the screen is so small (like MobileScreen) it displays two level AppBar at the top of the App
 - WebSize: when the app is viewed from Desktop browser it displays one Level AppBar at the top of the App, when the screen is Very Large it display
 all the tabs,fullSearchBar and buttons on the AppBar, then as the screen grew smaller, some of the buttons,fullSearchBar and Tab get Smaller and eventually disappears
@@ -57,6 +57,6 @@ To Run it directly on your device, run the following command and select your dev
 flutter run 
 ```
 ## Run the App on your Browser (no Setup/Installation Required)
-- [Click here for Demo](https://flutter.dev/docs/get-started/codelab)
+- [Click here for Demo](https://shittu33.github.io/Responsive-FacebookClone/)
 
 

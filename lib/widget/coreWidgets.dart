@@ -6,8 +6,161 @@ import '../sizes.dart';
 import '../style.dart';
 import 'custom_widget.dart';
 
-class MainContent extends StatelessWidget {
-  const MainContent(
+class FacebookBody extends StatefulWidget {
+  final int screenIndex;
+  final List<TabScreen> tabScreens;
+  @required
+  final Widget firstPanel;
+  @required
+  final Widget Function(TabScreen tabScreen, double bodyPadding)
+  mainPanelBuilder;
+  @required
+  final Widget lastPanel;
+
+  FacebookBody(
+      {this.screenIndex: 0,
+        this.tabScreens,
+        this.firstPanel,
+        this.mainPanelBuilder,
+        this.lastPanel});
+
+  @override
+  _FacebookBodyState createState() => _FacebookBodyState();
+}
+
+class _FacebookBodyState extends State<FacebookBody> {
+  double lastScreenWidth = 0;
+  double last2PanelGap = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: widget.screenIndex,
+      children: widget.tabScreens.map((tabScreen) {
+        double gap = isOnlyBody(context)
+            ? getSingleMainContGap(screenWidth(context))
+            : getMultiPanelGap(screenWidth(context));
+        return Scaffold(
+            body: Container(
+              color: Colors.grey[200],
+              child: Flex(
+                direction: Axis.horizontal,
+                children: [
+                  if (isAtLeastLarge(context))
+                    Expanded(
+                      flex: 19,
+                      child: widget.firstPanel,
+                    ),
+                  SizedBox(width: gap),
+                  Expanded(
+                    flex: 40,
+                    child:
+                    widget.mainPanelBuilder(tabScreen, getBodyPadding(context)),
+                  ),
+                  SizedBox(width: gap),
+                  if (!isOnlyBody(context))
+                    Expanded(
+                      flex: 19,
+                      child: widget.lastPanel,
+                    ),
+                ],
+              ),
+            ));
+      }).toList(),
+    );
+  }
+
+  double getBodyPadding(BuildContext context) {
+    double bodyPadding = 0;
+    if (isRequirePadWidth(context)) {
+      var screenWidth2 = screenWidth(context);
+      bodyPadding = calcLargerBodyPadding(screenWidth2);
+      lastScreenWidth = screenWidth2;
+    } else if (isStopBodyPadWidth(context)) {
+      lastScreenWidth = lastScreenWidth > 0 ? lastScreenWidth : noGap4BodyWidth;
+      bodyPadding = calcLargerBodyPadding(lastScreenWidth);
+    } else if (isSmallerScreen(context)) {
+      var screenWidth2 = screenWidth(context);
+      bodyPadding = calcSmallerBodyPadding(screenWidth2);
+      lastScreenWidth = screenWidth2;
+    } else if (isSmallScreen(context)) {
+      bodyPadding = calcBodyPaddingStatic;
+    } else if (isMediumScreen(context) /*|| isSmallScreen(context)*/) {
+      bodyPadding = calcBodyPaddingStatic;
+    } else if (isAtLeastLarge(context))
+      bodyPadding = 0;
+    else {
+      bodyPadding = 0;
+    }
+//    print("last Width is $lastScreenWidth");
+    print("body Padding is $bodyPadding");
+    return bodyPadding;
+  }
+
+  double getSingleMainContGap(double screenWidth) {
+    double gap = calcSingleBodyGap(screenWidth);
+    print("Main contFlex is $gap");
+    if (isSmallerScreen(context))
+      return 0;
+    else
+      return gap > 0 ? gap : 0;
+  }
+
+  double getMultiPanelGap(double screenWidth) {
+    if (isStopTwoPanelGap(context)) {
+      last2PanelGap = last2PanelGap > 0
+          ? last2PanelGap
+          : calcTwoPanelGap(noGap4TwoPanelWidth - 2.0);
+      return last2PanelGap;
+    } else if (isAtLeastLarge(context)) {
+      if (isStopBodyPadWidth(context))
+        return calcThreePanelGap(screenWidth) /*screenWidth*0.04*/;
+      else
+        return calcThreePanelGap(noBodyPadWidth + 10);
+    } else {
+      var gap = calcTwoPanelGap(screenWidth);
+      last2PanelGap = gap;
+      return gap;
+    }
+  }
+
+  double calcThreePanelGap(double screenWidth) {
+    var gap = ((screenWidth - extraLargeSize) + 90) / 2.0;
+    print("Three Panel gap is $gap");
+    return gap > 0 ? gap : 0;
+//    return calcSingleBodyGap(screenWidth) * 0.29;
+  }
+
+  double calcTwoPanelGap(double screenWidth) {
+    var gap = ((screenWidth - largeSize) + 230) / 2.0;
+    print("Two pannel gap is $gap");
+    return gap > 0 ? gap : 0;
+//    return calcSingleBodyGap(screenWidth) * 0.29;
+  }
+
+  double calcSingleBodyGap(double screenWidth) {
+    var gap = ((screenWidth - onlyBodyWidth) + 300) / 2.0;
+    return gap > 0 ? gap : 0;
+  }
+
+  double calcLargerBodyPadding(double screenWidth) {
+    return calcBodyPadding(screenWidth, noBodyPadWidth);
+  }
+
+  double calcSmallerBodyPadding(double screenWidth) {
+    return calcBodyPadding(screenWidth, smallerSize);
+  }
+
+  double calcBodyPadding(double screenWidth, double noBodyPadWidth) {
+    var bodyPadding = ((screenWidth - noBodyPadWidth) + 100) / 2.0;
+    return bodyPadding > 0 ? bodyPadding : 0;
+  }
+
+  double get calcBodyPaddingStatic => calcLargerBodyPadding(noGap4BodyWidth);
+}
+
+class MainBodyPanel extends StatelessWidget {
+  const MainBodyPanel(
     this.tabScreen,
     this.bodyPadding, {
     Key key,
@@ -1012,83 +1165,86 @@ class LeftPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: ListView.builder(
-          itemCount: sideMenus.length,
-          itemBuilder: (ctx, pos) {
-            String label = sideMenus[pos].label;
-            String alertMessage = sideMenus[pos].alertMessage;
-            String image = sideMenus[pos].image;
-            bool divide = sideMenus[pos].divide;
-            bool isMore = sideMenus[pos].isMore;
-            IconData icon = sideMenus[pos].icon;
-            bool isTitle = image == null && icon == null;
-            Color iconColor = sideMenus[pos].iconColor;
-            if (divide)
-              return Divider(
-                height: 11,
-                thickness: 0.4,
-                color: Colors.grey[500],
-              );
-            else
-              return FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                onPressed: () {},
-                hoverColor: Colors.grey[300],
-                child: ListTile(
-                    subtitle: alertMessage != null
-                        ? Row(
-                            children: [
-                              DotCircle(
-                                bordered: false,
-                              ),
-                              SizedBox(
-                                width: 6,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 5.0),
-                                child: Text(alertMessage,
-                                    style: TextStyle(color: FbStyle.accent)),
-                              ),
-                            ],
-                          )
-                        : null,
-                    leading: image == null
-                        ? (icon == null
-                            ? null
-                            : (isMore
-                                ? Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.grey[300]),
-                                    child: Icon(
-                                      Icons.expand_more,
-                                      size: 24,
-                                      color: Colors.black,
-                                    ),
-                                  )
-                                : icon == MdiIcons.accountGroup
-                                    ? CircleAvatar(
-                                        radius: 13, child: Icon(icon))
-                                    : Icon(
-                                        icon,
-                                        color: iconColor,
-                                      )))
-                        : CircleAvatar(
-                            radius: 14,
-                            backgroundImage: NetworkImage(image),
-                          ),
-                    title: Text(label,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isTitle
-                                ? Colors.grey[600]
-                                : Colors.grey[700]))),
-              );
-          }),
+    return Padding(
+      padding: const EdgeInsets.only(top: 25.0),
+      child: Container(
+        child: ListView.builder(
+            itemCount: sideMenus.length,
+            itemBuilder: (ctx, pos) {
+              String label = sideMenus[pos].label;
+              String alertMessage = sideMenus[pos].alertMessage;
+              String image = sideMenus[pos].image;
+              bool divide = sideMenus[pos].divide;
+              bool isMore = sideMenus[pos].isMore;
+              IconData icon = sideMenus[pos].icon;
+              bool isTitle = image == null && icon == null;
+              Color iconColor = sideMenus[pos].iconColor;
+              if (divide)
+                return Divider(
+                  height: 11,
+                  thickness: 0.4,
+                  color: Colors.grey[500],
+                );
+              else
+                return FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  onPressed: () {},
+                  hoverColor: Colors.grey[300],
+                  child: ListTile(
+                      subtitle: alertMessage != null
+                          ? Row(
+                              children: [
+                                DotCircle(
+                                  bordered: false,
+                                ),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 5.0),
+                                  child: Text(alertMessage,
+                                      style: TextStyle(color: FbStyle.accent)),
+                                ),
+                              ],
+                            )
+                          : null,
+                      leading: image == null
+                          ? (icon == null
+                              ? null
+                              : (isMore
+                                  ? Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.grey[300]),
+                                      child: Icon(
+                                        Icons.expand_more,
+                                        size: 24,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  : icon == MdiIcons.accountGroup
+                                      ? CircleAvatar(
+                                          radius: 13, child: Icon(icon))
+                                      : Icon(
+                                          icon,
+                                          color: iconColor,
+                                        )))
+                          : CircleAvatar(
+                              radius: 14,
+                              backgroundImage: NetworkImage(image),
+                            ),
+                      title: Text(label,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isTitle
+                                  ? Colors.grey[600]
+                                  : Colors.grey[700]))),
+                );
+            }),
+      ),
     );
   }
 }

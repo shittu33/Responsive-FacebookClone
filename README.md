@@ -1,7 +1,8 @@
 # Facebook-UI clone (Web & Mobile)
 
 A responsive Facebook UI clone for both Facebook web and Mobile.
-# Preview
+
+## Preview
 
 ![screenShot](https://github.com/shittu33/Responsive-FacebookClone/blob/master/screen.gif?raw=true)
 

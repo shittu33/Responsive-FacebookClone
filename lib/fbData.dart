@@ -152,6 +152,37 @@ final List<SideMenu> leftSideMenus = [
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrPV4io77xe_o1u_Gt_emxstF74NitZBzYTw&usqp=CAU",
       label: "Best Group"),
 ];
+final List<SideMenu> notificationMenus = [
+  SideMenu(
+    icon: MdiIcons.home,
+    label: "Home",
+    iconColor: FbStyle.accent,
+  ),
+  SideMenu(
+    icon: MdiIcons.movieOpen,
+    label: "Shows",
+  ),
+  SideMenu(
+      icon: Icons.video_call, label: "Live", alertMessage: "new 9+ Live Video"),
+  SideMenu(
+    icon: Icons.bookmark,
+    label: "Saved videos",
+  ),
+  SideMenu(divide: true),
+  SideMenu(label: "Your Watch"),
+  SideMenu(
+      image:
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAn1BMVEX///9UxfgBV5sptvZOw/jd8v265fylu9PY8P1KwvhBwfhmyvkATZbx+v4AUZjn9v4AsfbQ7f0raKQBU5TM2OYARZMZtPYBUI4osO4AI0EAK0wBTYkBWJ0BR34BQXQGSHoBPm4EKkUANmA9aJEAQHwsY5kAQ3oGQ3EFPmgAPG4ANWIFNVgAL1cELk0AJ0kBP3AApOXM0dkANHoXX6C6y94QIIt1AAADOElEQVR4nO3c+3bSQBDHccpFK1hrpTUrkJCi0gp49/2fzWRJa6BJ9lbZmTm/7wNw5nNmczZ/cNLrIYQQQgghZG70IqSr2OObOx+/8m88uYg9v7Hz8Zl/w0ns8c0BCCDxAASQeAACSDwAASQegAASD0AAiQcggMQDEEDiAQgg8QAEkHgAAkg8AAEkHoAAEg9AAIkHIIDEAxBA4gEIIPEABJB4AAJIPAABJB6AABIPQACJByCAxAMQQOIBCCDxAASQeAACSDwAASQegAASD0AAifdfgRejoOgDL4cBn4Ycjy8ZAIcBP372LJ++JAwcSgeK3yCAAJZdSAcG7ZAHMIDIBehN5AP0JHK46IOInDboReQGdCbyAzoSOQKdiDyBDkSuQGsiX6AlkTPQisjrovcg8t6gBZE/0EA0Agf0gZ1EI/D9YEAf2EG0AXoTTwhsJdoBPYknBbYQbYFexBMDG4n2QA/iyYENRBegM/EEF/3TjohuQEdihA2WHRBdgU7ESMADojvQgRgNWCP6AK2JEYGPRD+gJTEqsCL6Aq2IkYGa6A+0IEYHlsQAoJFIAFgQu2foBhqIUS56x0zATiKJDRoyAzuIUoCtRDnAFqIkYCNRFrCBKA34hCgPeESUCDwgyrjoO4gyN1gjygVWRMlATZQNLIgcgKMA4GAwoQ/sXb0NAKqPsce3KYColp8+xx7fJn/icp28eRd7fJs8iaoATvuCiXtgXy5RLVMNFEt82KBYYgGcTx+EEonqrg4USCyBSV0ojVgB60JZRHWXaeCBUBJR3X9JG4RyiHtgg1AKUQObhTKI6n6zbhVKIKrtJvsnFEhU212+TrWweYncierrLs+6hbyJBXCV60Paekp5E9Xtt9XmcYetQr5EdfthVxMev7XxJxbAmRZmqT6mrT6uxBJYCcsHcdpftANZEjVQC79nadLv9nEk7oGz7WqVp1OTjiOxAs52WbJYWAGZEStgPrfVcSNq4GZufPbYEgvgKu07rY8X8ccsT9xxnIg/fyUdd7sI4vWNNxBEMoEIIog0AhFEEGkEIogg0ghEEEGkEYggMiG+9u/mN4M/+PeuX4b0J/b4CCGEEELoWfoLHXqgHOoeuJEAAAAASUVORK5CYII=",
+      label: "Flutter Development"),
+  SideMenu(
+      image:
+          "data:image/png;base64,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",
+      label: "Dart Developer"),
+  SideMenu(
+      image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrPV4io77xe_o1u_Gt_emxstF74NitZBzYTw&usqp=CAU",
+      label: "Best Group"),
+];
 final List<Post> posts = [
   Post(
       posterName: "Bill Gate",
@@ -159,7 +190,7 @@ final List<Post> posts = [
       postTime: "13h",
       postMessage: post1,
       postImage:
-      "https://img.fixthephoto.com/blog/images/gallery/news_preview_mob_image__preview_956.jpg",
+          "https://img.fixthephoto.com/blog/images/gallery/news_preview_mob_image__preview_956.jpg",
       postLikeMessage: "Will Smith and 120 others",
       comment: [
         for (int i = 0; i < 20; i++)
@@ -222,6 +253,45 @@ final List<Post> posts = [
                 likeCount: 10)
         ])
 ];
+final List<Notification> notifications = [
+  Notification(isSubHead: true, subTitle: "New"),
+//  for (var i = 0; i < 2; i++)
+  Notification(
+      image: gateImage,
+      notType: NotificationType.Comment_NOTIFICATION,
+      from: "Biil Gate",
+      to: "Will Smith",
+      subTitle: "Mon at 18:25"),
+  Notification(isDivide: true),
+  Notification(
+      isSubHead: true,
+      subTitle: "Friend request",
+      notType: NotificationType.FRIEND_REQUEST),
+  for (var i = 0; i < 5; i++)
+    Notification(
+        image: denzelImage,
+        notType: NotificationType.FRIEND_REQUEST,
+        from: "Denzel Washington",
+        to: "",
+        subTitle: "8 mutual friends"),
+  Notification(notType: NotificationType.SEE_ALL, subTitle: "See All"),
+  Notification(isDivide: true),
+  Notification(isSubHead: true, subTitle: "Earlier"),
+
+  Notification(
+      image: elonImage,
+      notType: NotificationType.BirthDay_NOTIFICATION,
+      from: "Elon Musk ",
+      to: "Will Smith",
+      subTitle: "Mon at 18:25"),
+  for (var i = 0; i < 8; i++)
+    Notification(
+        image: smithImage,
+        notType: NotificationType.Comment_NOTIFICATION,
+        from: "Will Smith",
+        to: "Biil Gate",
+        subTitle: "Mon at 18:25"),
+];
 
 class Story {
   final String userName;
@@ -251,10 +321,43 @@ class SideMenu {
     this.image,
     this.divide: false,
     this.isMore: false,
-    this.iconColor: Colors.blue,
+    this.iconColor,
     this.icon,
     this.label: "Shittu AbdulMujeeb",
     this.alertMessage,
+  });
+}
+
+enum TrailType{
+  TEXT,ICON,NONE
+}
+enum NotificationType {
+  FRIEND_REQUEST,
+  PAGE_NOTIFICATION,
+  LIKE_NOTIFICATION,
+  Group_NOTIFICATION,
+  Comment_NOTIFICATION,
+  BirthDay_NOTIFICATION,
+  SEE_ALL,
+}
+
+class Notification {
+  final String image;
+  final bool isSubHead;
+  final bool isDivide;
+  final NotificationType notType;
+  final String from;
+  final String to;
+  final String subTitle;
+
+  Notification({
+    this.isDivide: false,
+    this.image,
+    this.notType,
+    this.isSubHead: false,
+    this.from: "Will Smith",
+    this.to: "Denzel Washington",
+    this.subTitle,
   });
 }
 
@@ -315,7 +418,8 @@ class Comment {
       this.loved: false,
       this.likeCount,
       this.isMe: false,
-      this.isReply: false,  this.commentTime});
+      this.isReply: false,
+      this.commentTime});
 }
 
 final String post1 =

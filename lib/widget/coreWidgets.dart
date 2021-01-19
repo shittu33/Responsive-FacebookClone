@@ -13,16 +13,16 @@ class FacebookBody extends StatefulWidget {
   final Widget firstPanel;
   @required
   final Widget Function(TabScreen tabScreen, double bodyPadding)
-  mainPanelBuilder;
+      mainPanelBuilder;
   @required
   final Widget lastPanel;
 
   FacebookBody(
       {this.screenIndex: 0,
-        this.tabScreens,
-        this.firstPanel,
-        this.mainPanelBuilder,
-        this.lastPanel});
+      this.tabScreens,
+      this.firstPanel,
+      this.mainPanelBuilder,
+      this.lastPanel});
 
   @override
   _FacebookBodyState createState() => _FacebookBodyState();
@@ -40,32 +40,35 @@ class _FacebookBodyState extends State<FacebookBody> {
         double gap = isOnlyBody(context)
             ? getSingleMainContGap(screenWidth(context))
             : getMultiPanelGap(screenWidth(context));
-        return Scaffold(
-            body: Container(
-              color: Colors.grey[200],
-              child: Flex(
-                direction: Axis.horizontal,
-                children: [
-                  if (isAtLeastLarge(context))
-                    Expanded(
-                      flex: 19,
-                      child: widget.firstPanel,
-                    ),
-                  SizedBox(width: gap),
+        if (tabScreen.title != HomeTitle)
+          return tabScreen.screen;
+        else
+          return Scaffold(
+              body: Container(
+            color: FbStyle.fbBackground,
+            child: Flex(
+              direction: Axis.horizontal,
+              children: [
+                if (isAtLeastLarge(context))
                   Expanded(
-                    flex: 40,
-                    child:
-                    widget.mainPanelBuilder(tabScreen, getBodyPadding(context)),
+                    flex: 19,
+                    child: widget.firstPanel,
                   ),
-                  SizedBox(width: gap),
-                  if (!isOnlyBody(context))
-                    Expanded(
-                      flex: 19,
-                      child: widget.lastPanel,
-                    ),
-                ],
-              ),
-            ));
+                SizedBox(width: gap),
+                Expanded(
+                  flex: 40,
+                  child: widget.mainPanelBuilder(
+                      tabScreen, getBodyPadding(context)),
+                ),
+                SizedBox(width: gap),
+                if (!isOnlyBody(context))
+                  Expanded(
+                    flex: 19,
+                    child: widget.lastPanel,
+                  ),
+              ],
+            ),
+          ));
       }).toList(),
     );
   }
@@ -164,45 +167,53 @@ class MainBodyPanel extends StatelessWidget {
     this.tabScreen,
     this.bodyPadding, {
     Key key,
+    @required this.scrollController,
   }) : super(key: key);
   final TabScreen tabScreen;
   final bodyPadding;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        if (isMobileScreen(context))
-          Align(
-              alignment: Alignment.topCenter,
-              child: NewPostWidget(
-                horizontalPadding: 0,
-                isMobile: true,
-              )),
-        if (isMobileScreen(context))
-          RoomWidget(
+    return Scrollbar(
+      isAlwaysShown: true,
+      controller: scrollController,
+      child: ListView(
+        controller: scrollController,
+        children: [
+          if (isMobileScreen(context))
+            Align(
+                alignment: Alignment.topCenter,
+                child: NewPostWidget(
+                  horizontalPadding: 0,
+                  isMobile: true,
+                )),
+          if (isMobileScreen(context))
+            RoomWidget(
+                horizontalPadding: bodyPadding,
+                images: roomImages,
+                isMobile: true),
+          Padding(
+            padding: const EdgeInsets.only(top: 25.0),
+            child:
+                FbStory(isMobile: isMobileScreen(context), stories: fbStories),
+          ),
+          if (!isMobileScreen(context))
+            NewPostWidget(
+              horizontalPadding: bodyPadding,
+              isMobile: false,
+            ),
+          if (!isMobileScreen(context))
+            RoomWidget(
               horizontalPadding: bodyPadding,
               images: roomImages,
-              isMobile: true),
-        Padding(
-          padding: const EdgeInsets.only(top: 25.0),
-          child: FbStory(isMobile: isMobileScreen(context), stories: fbStories),
-        ),
-        if (!isMobileScreen(context))
-          NewPostWidget(
-            horizontalPadding: bodyPadding,
-            isMobile: false,
-          ),
-        if (!isMobileScreen(context))
-          RoomWidget(
-            horizontalPadding: bodyPadding,
-            images: roomImages,
-          ),
-        ...posts.map((post) => PostItem(
-              bodyPadding: bodyPadding,
-              post: post,
-            )),
-      ],
+            ),
+          ...posts.map((post) => PostItem(
+                bodyPadding: bodyPadding,
+                post: post,
+              )),
+        ],
+      ),
     );
   }
 }
@@ -869,16 +880,22 @@ class FbStoryItem extends StatelessWidget {
 class RoundPostOwner extends StatelessWidget {
   const RoundPostOwner({
     Key key,
-    @required this.isStoryViewed,
+    this.isStoryViewed: true,
     @required this.userImage,
     this.circleRadius,
     this.isOnline: false,
+    this.stackWidget,
+    this.stackTop,
+    this.stackLeft,
   }) : super(key: key);
 
   final isStoryViewed;
   final isOnline;
   final String userImage;
   final double circleRadius;
+  final double stackTop;
+  final double stackLeft;
+  final Widget stackWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -897,14 +914,15 @@ class RoundPostOwner extends StatelessWidget {
             backgroundImage: NetworkImage(userImage),
           ),
         ),
-        if (isOnline)
+        if (isOnline || stackWidget != null)
           Positioned(
-              top: 26,
-              left: 29,
-              child: DotCircle(
-                bordered: true,
-                color: Colors.green,
-              )),
+              top: stackTop ?? 26,
+              left: stackLeft ?? 29,
+              child: stackWidget ??
+                  DotCircle(
+                    bordered: true,
+                    color: Colors.green,
+                  )),
       ],
     );
   }
@@ -1160,90 +1178,98 @@ class LeftPanel extends StatelessWidget {
   const LeftPanel({
     Key key,
     @required this.sideMenus,
+    @required this.scrollController,
   }) : super(key: key);
   final List<SideMenu> sideMenus;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 25.0),
       child: Container(
-        child: ListView.builder(
-            itemCount: sideMenus.length,
-            itemBuilder: (ctx, pos) {
-              String label = sideMenus[pos].label;
-              String alertMessage = sideMenus[pos].alertMessage;
-              String image = sideMenus[pos].image;
-              bool divide = sideMenus[pos].divide;
-              bool isMore = sideMenus[pos].isMore;
-              IconData icon = sideMenus[pos].icon;
-              bool isTitle = image == null && icon == null;
-              Color iconColor = sideMenus[pos].iconColor;
-              if (divide)
-                return Divider(
-                  height: 11,
-                  thickness: 0.4,
-                  color: Colors.grey[500],
-                );
-              else
-                return FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  onPressed: () {},
-                  hoverColor: Colors.grey[300],
-                  child: ListTile(
-                      subtitle: alertMessage != null
-                          ? Row(
-                              children: [
-                                DotCircle(
-                                  bordered: false,
-                                ),
-                                SizedBox(
-                                  width: 6,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 5.0),
-                                  child: Text(alertMessage,
-                                      style: TextStyle(color: FbStyle.accent)),
-                                ),
-                              ],
-                            )
-                          : null,
-                      leading: image == null
-                          ? (icon == null
-                              ? null
-                              : (isMore
-                                  ? Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.grey[300]),
-                                      child: Icon(
-                                        Icons.expand_more,
-                                        size: 24,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  : icon == MdiIcons.accountGroup
-                                      ? CircleAvatar(
-                                          radius: 13, child: Icon(icon))
-                                      : Icon(
-                                          icon,
-                                          color: iconColor,
-                                        )))
-                          : CircleAvatar(
-                              radius: 14,
-                              backgroundImage: NetworkImage(image),
-                            ),
-                      title: Text(label,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isTitle
-                                  ? Colors.grey[600]
-                                  : Colors.grey[700]))),
-                );
-            }),
+        child: Scrollbar(
+          isAlwaysShown: true,
+          controller: scrollController,
+          child: ListView.builder(
+              controller: scrollController,
+              itemCount: sideMenus.length,
+              itemBuilder: (ctx, pos) {
+                String label = sideMenus[pos].label;
+                String alertMessage = sideMenus[pos].alertMessage;
+                String image = sideMenus[pos].image;
+                bool divide = sideMenus[pos].divide;
+                bool isMore = sideMenus[pos].isMore;
+                IconData icon = sideMenus[pos].icon;
+                bool isTitle = image == null && icon == null;
+                Color iconColor = sideMenus[pos].iconColor;
+                if (divide)
+                  return Divider(
+                    height: 11,
+                    thickness: 0.4,
+                    color: Colors.grey[500],
+                  );
+                else
+                  return FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    onPressed: () {},
+                    hoverColor: Colors.grey[300],
+                    child: ListTile(
+                        subtitle: alertMessage != null
+                            ? Row(
+                                children: [
+                                  DotCircle(
+                                    bordered: false,
+                                  ),
+                                  SizedBox(
+                                    width: 6,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 5.0),
+                                    child: Text(alertMessage,
+                                        style:
+                                            TextStyle(color: FbStyle.accent)),
+                                  ),
+                                ],
+                              )
+                            : null,
+                        leading: image == null
+                            ? (icon == null
+                                ? null
+                                : (isMore
+                                    ? Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.grey[300]),
+                                        child: Icon(
+                                          Icons.expand_more,
+                                          size: 24,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    : icon == MdiIcons.accountGroup
+                                        ? CircleAvatar(
+                                            radius: 13, child: Icon(icon))
+                                        : Icon(
+                                            icon,
+                                            color: iconColor,
+                                          )))
+                            : CircleAvatar(
+                                radius: 14,
+                                backgroundImage: NetworkImage(image),
+                              ),
+                        title: Text(label,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isTitle
+                                    ? Colors.grey[600]
+                                    : Colors.grey[700]))),
+                  );
+              }),
+        ),
       ),
     );
   }
@@ -1279,127 +1305,134 @@ class RightPanel extends StatelessWidget {
   const RightPanel({
     Key key,
     @required this.items,
+    @required this.scrollController,
   }) : super(key: key);
   final List<RightMenu> items;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (ctx, pos) {
-            String label = items[pos].label;
-            String webLink = items[pos].webLink;
-            String image = items[pos].image;
-            bool divide = items[pos].divide;
-            bool isDotted = items[pos].isDotted;
-            bool isTrailTitle = items[pos].isTrailTitle;
-            bool isRoundLead = items[pos].isRoundLead;
-            if (divide)
-              return Divider(
-                height: 11,
-                thickness: 0.4,
-                color: Colors.grey[500],
-              );
-            else if (!isRoundLead && image != null)
-              return FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                onPressed: () {},
-                hoverColor: Colors.grey[300],
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(children: [
-                    if (image != null)
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            shape: BoxShape.rectangle,
-                            color: Colors.grey[300]),
-                        child: Image.network(
-                          image,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    Expanded(
-                        child: ListTile(
-                      title: Text(
-                        label,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(webLink),
-                    )),
-                  ]),
-                ),
-              );
-            else if (isRoundLead) {
-              if (isDotted)
+      child: Scrollbar(
+        isAlwaysShown: true,
+        controller: scrollController,
+        child: ListView.builder(
+            controller: scrollController,
+            itemCount: items.length,
+            itemBuilder: (ctx, pos) {
+              String label = items[pos].label;
+              String webLink = items[pos].webLink;
+              String image = items[pos].image;
+              bool divide = items[pos].divide;
+              bool isDotted = items[pos].isDotted;
+              bool isTrailTitle = items[pos].isTrailTitle;
+              bool isRoundLead = items[pos].isRoundLead;
+              if (divide)
+                return Divider(
+                  height: 11,
+                  thickness: 0.4,
+                  color: Colors.grey[500],
+                );
+              else if (!isRoundLead && image != null)
                 return FlatButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                   onPressed: () {},
                   hoverColor: Colors.grey[300],
-                  child: Stack(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(children: [
+                      if (image != null)
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              shape: BoxShape.rectangle,
+                              color: Colors.grey[300]),
+                          child: Image.network(
+                            image,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      Expanded(
+                          child: ListTile(
+                        title: Text(
+                          label,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(webLink),
+                      )),
+                    ]),
+                  ),
+                );
+              else if (isRoundLead) {
+                if (isDotted)
+                  return FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    onPressed: () {},
+                    hoverColor: Colors.grey[300],
+                    child: Stack(
+                      children: [
+                        SimpleTile(
+                            image: image,
+                            label: label,
+                            isTrailTitle: isTrailTitle),
+                        Positioned(
+                          top: 30,
+                          left: 35,
+                          child: DotCircle(
+                            color: Colors.green,
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                else
+                  return Column(
                     children: [
-                      SimpleTile(
-                          image: image,
-                          label: label,
-                          isTrailTitle: isTrailTitle),
-                      Positioned(
-                        top: 30,
-                        left: 35,
-                        child: DotCircle(
-                          color: Colors.green,
+                      FlatButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        onPressed: () {},
+                        hoverColor: Colors.grey[300],
+                        child: SimpleTile(
+                            image: image,
+                            label: label,
+                            isTrailTitle: isTrailTitle),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 25),
+                        child: Column(
+                          children: [
+                            YourPagesItem(
+                              icon: MdiIcons.wechat,
+                              title: "5 Messages",
+                            ),
+                            YourPagesItem(
+                              icon: MdiIcons.bellOutline,
+                              title: "20+ Messages",
+                            ),
+                            YourPagesItem(
+                              icon: Icons.campaign_outlined,
+                              title: "Create Promotion",
+                            ),
+                          ],
                         ),
                       )
                     ],
-                  ),
+                  );
+              } else {
+                return SimpleTile(
+                  image: image,
+                  label: label,
+                  isTrailTitle: isTrailTitle,
+                  isMultiTrail: label == "Contacts",
                 );
-              else
-                return Column(
-                  children: [
-                    FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      onPressed: () {},
-                      hoverColor: Colors.grey[300],
-                      child: SimpleTile(
-                          image: image,
-                          label: label,
-                          isTrailTitle: isTrailTitle),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 25),
-                      child: Column(
-                        children: [
-                          YourPagesItem(
-                            icon: MdiIcons.wechat,
-                            title: "5 Messages",
-                          ),
-                          YourPagesItem(
-                            icon: MdiIcons.bellOutline,
-                            title: "20+ Messages",
-                          ),
-                          YourPagesItem(
-                            icon: Icons.campaign_outlined,
-                            title: "Create Promotion",
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                );
-            } else {
-              return SimpleTile(
-                image: image,
-                label: label,
-                isTrailTitle: isTrailTitle,
-                isMultiTrail: label == "Contacts",
-              );
-            }
-          }),
+              }
+            }),
+      ),
     );
   }
 }
@@ -1481,6 +1514,405 @@ class YourPagesItem extends StatelessWidget {
               color: Colors.grey[600]),
         ),
         leading: Icon(icon),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class PageScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class VideoScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+            width: 350,
+            child: Material(
+              color: Colors.white,
+              elevation: 4,
+              child: VideoLeftPanel(
+                sideMenus: notificationMenus,
+                scrollController: ScrollController(),
+              ),
+            )),
+        Container(
+          color: FbStyle.fbBackground,
+        )
+      ],
+    );
+  }
+}
+
+class GroupScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class MenuScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return LeftPanel(
+      sideMenus: leftSideMenus,
+      scrollController: ScrollController(),
+    );
+  }
+}
+
+class NotificationScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        color: FbStyle.fbBackgroundWhite,
+        child: Column(children: [
+          ListTile(
+            title: Text(
+              "Notifications",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            trailing: MobileRoundIcon(icon: Icons.search),
+          ),
+          Expanded(
+            child: ListView.builder(
+                shrinkWrap: true,
+                physics: AlwaysScrollableScrollPhysics(),
+                itemCount: notifications.length,
+                itemBuilder: (ctx, pos) {
+                  var notification = notifications[pos];
+                  return NotificationItem(notification: notification);
+                }),
+          )
+        ]));
+  }
+}
+
+class NotificationItem extends StatelessWidget {
+  final notification;
+
+  const NotificationItem({Key key, this.notification}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    NotificationType type = notification.notType;
+    bool isDivide = notification.isDivide;
+    bool isSubHead = notification.isSubHead;
+    String subtitle = notification.subTitle;
+    bool isFriendRequest = type == NotificationType.FRIEND_REQUEST;
+
+    if (isSubHead)
+      return ListTile(
+        title: Text(subtitle, style: TextStyle(fontWeight: FontWeight.bold)),
+        trailing: isFriendRequest
+            ? Text("See all", style: TextStyle(color: Colors.blue))
+            : null,
+      );
+    else if (type == NotificationType.SEE_ALL)
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FlatButton(
+            onPressed: () {}, child: Text(subtitle), color: Colors.grey[300]),
+      );
+    else if (isDivide)
+      return Divider(
+        height: 11,
+        thickness: 0.4,
+        color: Colors.grey[500],
+      );
+    else if (isFriendRequest)
+      return CNotificationItem(
+        notification: notification,
+      );
+    else
+      return FlatButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        onPressed: () {},
+        hoverColor: Colors.grey[300],
+        child: CNotificationItem(
+          notification: notification,
+        ),
+      );
+  }
+}
+
+class CNotificationItem extends StatelessWidget {
+  final notification;
+
+  const CNotificationItem({Key key, @required this.notification})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    NotificationType type = notification.notType;
+    String image = notification.image;
+    String subtitle = notification.subTitle;
+    String to = notification.to;
+    String from = notification.from;
+
+    var isFriendRequest = type == NotificationType.FRIEND_REQUEST;
+    return Container(
+//        color: isFriendRequest ? null : Colors.lightBlue[50],
+      child: ListTile(
+        leading: RoundPostOwner(
+          circleRadius: 35,
+          userImage: image ?? "",
+          stackTop: 20,
+          stackLeft: 38,
+          stackWidget: NotificationTypeIndic(type),
+        ),
+        title: Text.rich(getNotificationMessage(type, to: to, from: from)),
+        subtitle: isFriendRequest
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(subtitle),
+                  Row(
+//                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4)),
+                          onPressed: () {},
+                          child: Text("Confirm",
+                              style: TextStyle(color: Colors.white)),
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Expanded(
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4)),
+                          onPressed: () {},
+                          child: Text("Delete"),
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              )
+            : Text(subtitle),
+        trailing: Icon(Icons.more_horiz),
+      ),
+    );
+  }
+
+  TextSpan getNotificationMessage(NotificationType type,
+      {String to, String from}) {
+    if (type == NotificationType.Comment_NOTIFICATION)
+      return TextSpan(text: "", style: TextStyle(), children: [
+        TextSpan(text: from, style: TextStyle(fontWeight: FontWeight.bold)),
+        TextSpan(text: " also commented on "),
+        if (to != null)
+          TextSpan(text: to, style: TextStyle(fontWeight: FontWeight.bold)),
+        TextSpan(text: to == null ? "your post." : "'s post."),
+      ]);
+    else if (type == NotificationType.BirthDay_NOTIFICATION)
+      return TextSpan(text: "", style: TextStyle(), children: [
+        TextSpan(text: from, style: TextStyle(fontWeight: FontWeight.bold)),
+        TextSpan(
+            text: " and 4 others have birthdays today.Wish them all the best ")
+      ]);
+    else if (type == NotificationType.LIKE_NOTIFICATION)
+      return TextSpan(text: "", style: TextStyle(), children: [
+        TextSpan(text: from, style: TextStyle(fontWeight: FontWeight.bold)),
+        TextSpan(text: "sent you a friend request. "),
+      ]);
+    else if (type == NotificationType.FRIEND_REQUEST)
+      return TextSpan(text: "", style: TextStyle(), children: [
+        TextSpan(text: from, style: TextStyle(fontWeight: FontWeight.bold)),
+        TextSpan(text: " sent you a friend request. "),
+      ]);
+
+    return TextSpan(text: "", style: TextStyle(), children: [
+      TextSpan(text: from, style: TextStyle(fontWeight: FontWeight.bold)),
+      TextSpan(text: "also commented on "),
+      if (to != null)
+        TextSpan(text: to, style: TextStyle(fontWeight: FontWeight.bold)),
+      TextSpan(text: to == null ? "your post." : "'s post."),
+    ]);
+  }
+}
+
+class NotificationTypeIndic extends StatelessWidget {
+  final NotificationType type;
+
+  const NotificationTypeIndic(
+    this.type, {
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Color color = Colors.blue[700];
+    IconData icon = Icons.eleven_mp;
+    if (type == NotificationType.Comment_NOTIFICATION) {
+      color = Colors.green[400];
+      icon = MdiIcons.chat;
+    } else if (type == NotificationType.BirthDay_NOTIFICATION) {
+      color = Colors.pinkAccent;
+      icon = Icons.cake;
+    } else if (type == NotificationType.LIKE_NOTIFICATION) {
+      color = Colors.blue[700];
+      icon = MdiIcons.thumbUp;
+    } else if (type == NotificationType.BirthDay_NOTIFICATION) {
+      color = Colors.pinkAccent;
+      icon = Icons.cake;
+    } else if (type == NotificationType.BirthDay_NOTIFICATION) {
+      color = Colors.pinkAccent;
+      icon = Icons.cake;
+    } else if (type == NotificationType.FRIEND_REQUEST) {
+      color = Colors.blue;
+      icon = MdiIcons.accountGroup;
+    }
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: RoundIcon(
+        circleBackground: color,
+        iconColor: Colors.white,
+        icon: icon,
+        iconSize: 19,
+        isButton: false,
+        iconPadding: EdgeInsets.only(top: 4, left: 2, right: 2),
+      ),
+    );
+  }
+}
+
+class VideoLeftPanel extends StatelessWidget {
+  const VideoLeftPanel({
+    Key key,
+    @required this.sideMenus,
+    @required this.scrollController,
+  }) : super(key: key);
+  final List<SideMenu> sideMenus;
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 25.0),
+      child: Container(
+        child: Column(
+          children: [
+            ListTile(
+              title: Text("Watch",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: RoundSearchBar(
+                  txtController: TextEditingController(),
+                  height: 38,
+                  label: "Search Videos"),
+            ),
+            Expanded(
+              child: Scrollbar(
+                isAlwaysShown: true,
+                controller: scrollController,
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: AlwaysScrollableScrollPhysics(),
+                    controller: scrollController,
+                    itemCount: sideMenus.length,
+                    itemBuilder: (ctx, pos) {
+                      String label = sideMenus[pos].label;
+                      String alertMessage = sideMenus[pos].alertMessage;
+                      String image = sideMenus[pos].image;
+                      bool divide = sideMenus[pos].divide;
+//                bool isSea = sideMenus[pos].isMore;
+                      bool isMore = sideMenus[pos].isMore;
+                      IconData icon = sideMenus[pos].icon;
+                      bool isTitle = image == null && icon == null;
+                      Color iconColor = sideMenus[pos].iconColor;
+                      if (divide)
+                        return Divider(
+                          height: 11,
+                          thickness: 0.4,
+                          color: Colors.grey[500],
+                        );
+                      else
+                        return FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          onPressed: () {},
+                          hoverColor: Colors.blue[50],
+                          child: ListTile(
+                              subtitle: alertMessage != null
+                                  ? Row(
+                                      children: [
+                                        DotCircle(
+                                          bordered: false,
+                                        ),
+                                        SizedBox(
+                                          width: 6,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 5.0),
+                                          child: Text(alertMessage,
+                                              style: TextStyle(
+                                                color: FbStyle.accent,
+                                              )),
+                                        ),
+                                      ],
+                                    )
+                                  : null,
+                              leading: image == null
+                                  ? (icon == null
+                                      ? null
+                                      : Container(
+                                          width: 30,
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color:
+                                                iconColor ?? Colors.grey[300],
+                                          ),
+                                          child: Icon(
+                                            icon,
+                                            size: 24,
+                                            color: iconColor == null
+                                                ? Colors.black
+                                                : Colors.white,
+                                          ),
+                                        ))
+                                  : CircleAvatar(
+                                      radius: 14,
+                                      backgroundImage: NetworkImage(image),
+                                    ),
+                              title: Text(label,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isTitle
+                                          ? Colors.grey[600]
+                                          : Colors.grey[700]))),
+                        );
+                    }),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

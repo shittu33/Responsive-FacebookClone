@@ -1,5 +1,6 @@
 import 'package:facebookclone/fbData.dart';
 import 'package:facebookclone/strings.dart';
+import 'package:facebookclone/widget/coreWidgets.dart';
 import 'package:facebookclone/widget/custom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -76,32 +77,38 @@ List<Widget> appBarLeadChildren(context) {
 
 List<Widget> getMobileTrailing(BuildContext context) {
   return [
-    SizedBox(
-      width: mAppBarIconHeight + 20,
-      height: mAppBarIconHeight + 20,
-      child: RoundIcon(
-          iconSize: mAppBarIconHeight - 2,
-          padding: const EdgeInsets.only(right: 8.0),
-          icon: Icons.search,
-          onPress: () {}),
-    ),
+    MobileRoundIcon(icon: Icons.search),
     CounterWidget(
       isMiniCounter: true,
       counterAlignment: FractionalOffset(0.78, -0.35),
       truncateCount: true,
       count: 8,
       counterBackground: FbStyle.red,
-      child: SizedBox(
-        width: mAppBarIconHeight + 20,
-        height: mAppBarIconHeight + 20,
-        child: RoundIcon(
-            iconSize: mAppBarIconHeight - 2,
-            padding: const EdgeInsets.only(right: 8.0),
-            icon: MdiIcons.facebookMessenger,
-            onPress: () {}),
-      ),
+      child: MobileRoundIcon(icon: MdiIcons.facebookMessenger),
     ),
   ];
+}
+
+class MobileRoundIcon extends StatelessWidget {
+  const MobileRoundIcon({
+    Key key,
+    @required this.icon,
+  }) : super(key: key);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: mAppBarIconHeight + 20,
+      height: mAppBarIconHeight + 20,
+      child: RoundIcon(
+          iconSize: mAppBarIconHeight - 2,
+          padding: const EdgeInsets.only(right: 8.0),
+          icon: icon,
+          onPress: () {}),
+    );
+  }
 }
 
 List<Widget> getTrailingChildren(BuildContext context) {
@@ -132,7 +139,7 @@ List<Widget> getTrailingChildren(BuildContext context) {
     RoundIcon(
         icon: Icons.add,
         padding: const EdgeInsets.only(right: 3.0),
-        onPress: () {}),
+        onPress: () {showNotificationDialog(context);}),
     CounterWidget(
       counterAlignment: FractionalOffset(0.78, -0.35),
       truncateCount: true,
@@ -142,20 +149,51 @@ List<Widget> getTrailingChildren(BuildContext context) {
       child: RoundIcon(
           padding: const EdgeInsets.only(right: 0.0),
           icon: MdiIcons.facebookMessenger,
-          onPress: () {}),
+          onPress: () {
+            showNotificationDialog(context);
+          }),
     ),
     RoundIcon(
         padding: const EdgeInsets.only(right: 5.0),
         icon: Icons.notifications,
-        onPress: () {}),
+        onPress: () {
+          showNotificationDialog(context);
+        }),
     RoundIcon(
         padding: const EdgeInsets.only(right: 3.0),
         icon: Icons.expand_more,
-        onPress: () {}),
+        onPress: () {showNotificationDialog(context);}),
   ];
 }
 
+Future showNotificationDialog(BuildContext context) {
+  return showDialog(
+          barrierColor: Colors.transparent,
+          context: context,
+          builder: (context) => Align(
+            alignment: Alignment.topRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: cToolBarHeight -5, right: 20, bottom: 20),
+                  child: Dialog(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 5,
+                    insetPadding:
+                        EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                    child: SizedBox(width: 350, child: NotificationScreen()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+}
+
+const HomeTitle = 'Home';
 const GameTitle = 'Game';
+const GroupTitle = 'Groups';
 const MenuTitle = 'Menu';
 const PageTitle = 'Pages';
 const AlertTitle = 'Notifications';
@@ -185,17 +223,20 @@ List<TabScreen> getTabsScreens(BuildContext context) {
 }
 
 List<TabScreen> mobileScreenTabs() {
-  final tabs = tabsScreens()
-      .where(
-          (element) => element.title != GameTitle && element.title != PageTitle)
-      .toList();
+  List<TabScreen> tabs = tabsScreens()
+      .where((tab) => tab.title != GameTitle && tab.title != PageTitle)
+      .toList()
+      .map((tab) {
+    if (tab.title == GroupTitle) tab.alertCount = 0;
+    return tab;
+  }).toList();
   return tabs;
 }
 
 List<TabScreen> tabsScreens() {
   return [
     TabScreen(
-        title: 'Home',
+        title: HomeTitle,
         icon: Icons.home_rounded,
         iconColor: FbStyle.accent,
         screen: HomeScreen()),
@@ -212,7 +253,7 @@ List<TabScreen> tabsScreens() {
         screen: VideoScreen(),
         alertCount: 30),
     TabScreen(
-        title: 'Groups',
+        title: GroupTitle,
         icon: MdiIcons.accountGroup,
         iconColor: FbStyle.iconGrey,
         isCircleTabIcon: true,
@@ -280,7 +321,7 @@ class TabScreen extends Object {
   final String title;
   final IconData icon;
   final Widget screen;
-  final int alertCount;
+  int alertCount;
   final bool isCircleTabIcon;
   Color iconColor;
 
@@ -301,48 +342,6 @@ class TabScreen extends Object {
   @override
   // TODO: implement hashCode
   int get hashCode => super.hashCode;
-}
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class PageScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class VideoScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class GroupScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class NotificationScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class MenuScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
 }
 
 extension TabScreensExt on List<TabScreen> {

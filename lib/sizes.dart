@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 const cToolBarHeight = 63.0;
 const appBarLogoHeight = cToolBarHeight * 0.64;
 const appBarIconHeight = cToolBarHeight * 0.50;
-const mAppBarIconHeight = cToolBarHeight * 0.40;
+const mAppBarIconHeight = cToolBarHeight * 0.46;
 const topAppBarHeight = cToolBarHeight / 1.3;
 const double mobileScreenWidth = 450;
 const double smallerSize = 610;

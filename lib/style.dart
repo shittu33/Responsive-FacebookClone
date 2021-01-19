@@ -15,4 +15,6 @@ class FbStyle {
   static Color iconGrey = Colors.grey[600];
 //  static Color iconGrey = Colors.grey[600];
   static Color iconBlack = Colors.black;
+  static Color fbBackground = Colors.grey[200];
+  static Color fbBackgroundWhite = Colors.white;
 }

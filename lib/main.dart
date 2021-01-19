@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home:FacebookWidget()/* FacebookUI(title: 'Facebook Flutter')*/,
+      home: FacebookWidget() /* FacebookUI(title: 'Facebook Flutter')*/,
     );
   }
 }
@@ -52,11 +52,13 @@ class FacebookUI extends StatefulWidget {
   _FacebookUIState createState() => _FacebookUIState();
 }
 
-class _FacebookUIState extends State<FacebookUI>
-with WidgetsBindingObserver {
+class _FacebookUIState extends State<FacebookUI> with WidgetsBindingObserver {
   int _screenIndex = 0;
   double smallScreenWidth = smallSize;
-
+  ScrollController _lScrollController = ScrollController();
+  ScrollController _mScrollController = ScrollController();
+  ScrollController _rScrollController = ScrollController();
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -79,6 +81,12 @@ with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        child: LeftPanel(
+            sideMenus: leftSideMenus,
+            scrollController: ScrollController()),
+      ),
       appBar: FacebookAppBar(
         mobileWidth: smallScreenWidth,
         actionAtCenter: isMobileScreen(context)
@@ -111,16 +119,30 @@ with WidgetsBindingObserver {
                     iconSize: appBarIconHeight))
                 .toList(),
             onTap: (index, tabsList) => setState(() {
-                  changeSelectedTabColor(index);
-                  _screenIndex = index;
+                  if (widget.tabScreens[index].title == MenuTitle && !isMobileScreen(context))
+                  toggleDrawer();
+                  else {
+                    changeSelectedTabColor(index);
+                    _screenIndex = index;
+                  }
                 })),
       ),
       body: FacebookBody(
-        firstPanel: LeftPanel(sideMenus: leftSideMenus),
+        firstPanel: LeftPanel(
+          sideMenus: leftSideMenus,
+          scrollController: _lScrollController,
+        ),
         mainPanelBuilder: (tabScreen, bodyPadding) {
-          return MainBodyPanel(tabScreen, bodyPadding);
+          return MainBodyPanel(
+            tabScreen,
+            bodyPadding,
+            scrollController: _mScrollController,
+          );
         },
-        lastPanel: RightPanel(items: rightMenus),
+        lastPanel: RightPanel(
+          items: rightMenus,
+          scrollController: _rScrollController,
+        ),
         screenIndex: _screenIndex,
         tabScreens: widget.tabScreens,
       ),
@@ -136,6 +158,15 @@ with WidgetsBindingObserver {
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  toggleDrawer() async {
+    if (_scaffoldKey.currentState.isDrawerOpen)
+      _scaffoldKey.currentState.openEndDrawer();
+    else {
+      _scaffoldKey.currentState.openDrawer();
+      setState(() {});
+    }
   }
 
   void changeSelectedTabColor(int index) {

@@ -415,7 +415,8 @@ class CounterWidget extends StatelessWidget {
       this.counterAlignment,
       this.counterConstraints,
       this.counterTextStyle,
-      this.counterPadding, this.isMiniCounter:false});
+      this.counterPadding,
+      this.isMiniCounter: false});
 
   @override
   Widget build(BuildContext context) {
@@ -439,10 +440,13 @@ class CounterWidget extends StatelessWidget {
   buildCounter(BuildContext context) {
     var isSingleNum = count < maximumCount;
     return Align(
-      alignment:  isMiniCounter?FractionalOffset(0.8,0.22):Alignment.topRight,
+      alignment:
+          isMiniCounter ? FractionalOffset(0.8, 0.22) : Alignment.topRight,
       child: Container(
         constraints: counterConstraints ??
-            BoxConstraints(minWidth:isMiniCounter?15:( isSingleNum ? 20 : 28), minHeight:isMiniCounter?15:20),
+            BoxConstraints(
+                minWidth: isMiniCounter ? 15 : (isSingleNum ? 20 : 28),
+                minHeight: isMiniCounter ? 15 : 20),
         decoration: isSingleNum
             ? BoxDecoration(
                 shape: BoxShape.circle,
@@ -465,7 +469,7 @@ class CounterWidget extends StatelessWidget {
             style: counterTextStyle ??
                 TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: counterTextSize?? (isMiniCounter?9:14),
+                  fontSize: counterTextSize ?? (isMiniCounter ? 9 : 14),
                   color: counterTextColor,
                 ),
             textAlign: isSingleNum ? TextAlign.center : TextAlign.start,
@@ -480,12 +484,12 @@ class RoundIcon extends StatelessWidget {
   const RoundIcon({
     Key key,
     @required this.icon,
-    @required this.onPress,
+    this.onPress,
     this.iconColor,
     this.padding: const EdgeInsets.only(right: 8.0),
     this.circleBackground,
     this.iconSize: appBarIconHeight - 7,
-    this.elevation: 0 /*22*/,
+    this.elevation: 0, this.isButton:true, this.iconPadding /*22*/,
   }) : super(key: key);
 
   final IconData icon;
@@ -494,7 +498,9 @@ class RoundIcon extends StatelessWidget {
   final double iconSize;
   final double elevation;
   final Color circleBackground;
+  final bool isButton;
   final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry iconPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -504,11 +510,19 @@ class RoundIcon extends StatelessWidget {
         elevation: elevation,
         type: MaterialType.circle,
         color: circleBackground ?? Colors.grey[200],
-        child: IconButton(
+        child:isButton? IconButton(
           iconSize: iconSize,
-          color: iconColor != null ? iconColor : Colors.black,
+          color: iconColor ?? Colors.black,
           icon: Icon(icon),
-          onPressed: onPress,
+          onPressed: onPress??(){},
+        ):Padding(
+          padding: iconPadding??EdgeInsets.zero,
+          child: Icon(icon,
+            size: iconSize,
+            color: iconColor ?? Colors.black,
+//          icon: Icon(icon),
+//          onPressed: onPress,
+          ),
         ),
       ),
     );
@@ -547,7 +561,9 @@ class RoundSearchBar extends StatelessWidget {
       this.noPrefix: false,
       this.backgroundColor,
       this.borderColor,
-      this.borderWidth: 0, this.trailing, this.noBorder:false});
+      this.borderWidth: 0,
+      this.trailing,
+      this.noBorder: false});
 
   @override
   Widget build(BuildContext context) {
@@ -557,8 +573,11 @@ class RoundSearchBar extends StatelessWidget {
       child: Material(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
-            side:noBorder?BorderSide.none: BorderSide(
-                color: borderColor ?? Colors.grey[600], width: borderWidth)),
+            side: noBorder
+                ? BorderSide.none
+                : BorderSide(
+                    color: borderColor ?? Colors.grey[600],
+                    width: borderWidth)),
         color: backgroundColor ?? Colors.grey[200],
         elevation: 0,
         child: ListTile(
@@ -592,7 +611,8 @@ class RoundSearchBar extends StatelessWidget {
             onTap: onTap,
             onSubmitted: onSubmitted,
 //        onEditingComplete: ,
-          ),trailing: trailing,
+          ),
+          trailing: trailing,
         ),
       ),
     );

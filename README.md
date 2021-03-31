@@ -4,7 +4,7 @@ A responsive Facebook UI clone for both Facebook web and Mobile.
 
 ## Preview
 
-![screenShot](https://github.com/shittu33/Responsive-FacebookClone/blob/master/pic.png?raw=true)
+![ScreenShot](https://github.com/shittu33/ResponsiveNewsApp/blob/master/screen.gif?raw=true)
 
 ## Technology Used
 - Flutter
